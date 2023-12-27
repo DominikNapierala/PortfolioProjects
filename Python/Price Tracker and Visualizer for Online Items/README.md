@@ -2,7 +2,7 @@
 ### Description:
 The **Price Tracker and Visualizer for Online Items** tool was designed to help track prices of items found online. The program allows the user to add an item through user provided link, remove an item, update prices of all previously added items and visualize the trend of item prices. By storing item prices we can make better shopping decisions, find best deals and identify price trends.
 ### User guide:
-Since most e-commerce retailing websites do not allow web scraping, this program was built to use alongside a dummy web scraping friendly website- "Books To Scrape" (url: \https://books.toscrape.com/index.html). ==**This program was designed to work only when provided links from this web scraping friendly website.**== The creator of this program does not encourage any action that's against any online retailer's terms of service.
+Since most e-commerce retailing websites do not allow web scraping, this program was built to use alongside a dummy web scraping friendly website- "Books To Scrape" (url: https://books.toscrape.com/index.html). **This program was designed to work only when provided links from this web scraping friendly website.** The creator of this program does not encourage any action that's against any online retailer's terms of service.
 
 Before using the program, you have to install several non-standard python libraries. Before running the program, please type in your console and execute each of these lines one by one:
 1. pip install tabulate
