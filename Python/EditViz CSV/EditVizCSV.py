@@ -1,10 +1,15 @@
 import pandas as pd
 import tkinter as tk
+import seaborn as sns
+import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter import ttk
 from tkinter import messagebox
 from typing import Union
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import csv
+
+sns.set_theme(font = "Bahnschrift")
 
 def main():
     app_window()
@@ -12,26 +17,47 @@ def main():
 def app_window():
     button_font = ("Arial", 10, "normal")
     app = tk.Tk() # This line creates the instance of the app.
-    app.geometry("800x450")
-    app.wm_minsize(800, 450)
+    app.geometry("1000x550")
+    app.wm_minsize(1000, 550)
     app.title("CSV file modifier and data visualizer")
 
 # Frames
 ###########################
+    # Notebooks
+    notebook_controls = ttk.Notebook(app)
+    notebook_table_viz = ttk.Notebook(app)
+    ###########################
+
+    # Controls notebook frames
     controls_frame = ttk.Frame(
-        master = app,
+        master = notebook_controls,
         borderwidth = 1,
         relief = "solid"
     )
+
+    visualize_data_frame = ttk.Frame(
+        master = notebook_controls,
+        borderwidth = 1,
+        relief = "solid"
+    )
+    ###########################
+
+    # Table & viz notebook frames
+    table_frame = ttk.Frame(
+        master = notebook_table_viz,
+        borderwidth = 1,
+        relief = "solid"
+    )
+
+    viz_frame = ttk.Frame(
+        master = notebook_table_viz,
+        borderwidth = 1,
+        relief = "solid"
+    )
+    ###########################
 
     buttons_frame = ttk.Frame(
         master = controls_frame,
-        borderwidth = 1,
-        relief = "solid"
-    )
-
-    table_frame= ttk.Frame(
-        master = app,
         borderwidth = 1,
         relief = "solid"
     )
@@ -53,6 +79,27 @@ def app_window():
         borderwidth = 1,
         relief = "solid"
     )
+    ###########################
+
+    # Viz type frames
+    barplot_frame = ttk.Frame(
+        master = visualize_data_frame,
+        borderwidth = 1,
+        relief = "solid"
+    )
+
+    lineplot_frame = ttk.Frame(
+        master = visualize_data_frame,
+        borderwidth = 1,
+        relief = "solid"
+    )
+
+    ###########################
+    notebook_controls.add(controls_frame, text = "data")
+    notebook_controls.add(visualize_data_frame, text = "viz")
+
+    notebook_table_viz.add(table_frame, text = "table")
+    notebook_table_viz.add(viz_frame, text = "viz")
 
 ###########################
 
@@ -72,6 +119,12 @@ def app_window():
         text = "Export table",
         command = lambda: export_table(table_layout)
     )
+
+    # dummy_button = ttk.Button(
+    #     master = buttons_frame,
+    #     text = "table content",
+    #     command = lambda: get_table_content(table_layout)
+    # )
 
     # Table
     ###########################
@@ -168,6 +221,38 @@ def app_window():
         command = lambda: delete_selected_column(dropdown_menu_value, table_layout, delete_selected_column_dropdown)
     )
 
+    # Viz types
+    ###########################
+        # Barplot
+    barplot_label = ttk.Label(
+        master = barplot_frame,
+        text = "Barplot"
+    )
+    barplot_button = ttk.Button(
+        master = barplot_frame,
+        text = "Select",
+        command = lambda: barplot_options(table_layout, viz_canvas)
+    )
+
+        # Lineplot
+    lineplot_label = ttk.Label(
+        master = lineplot_frame,
+        text = "Lineplot"
+    )
+    lineplot_button = ttk.Button(
+        master = lineplot_frame,
+        text = "Select"
+    )
+
+    # Viz canvas
+    ###########################
+    fig = plt.Figure()
+    fig.patch.set_facecolor((200/255, 210/255, 195/255))
+    viz_canvas = FigureCanvasTkAgg(
+        fig,
+        master = viz_frame
+    )
+
 # When you use the bind method on a Tkinter widget, the callback function you bind to the event always receives an event object as its first parameter.
 # table_layout.bind("<<TreeviewSelect>>", lambda event: row_selection(table_layout))
 
@@ -178,8 +263,7 @@ def app_window():
 # Packing
 ###########################
     # Frames
-
-    controls_frame.grid(
+    notebook_controls.grid(
         row = 0,
         column = 0,
         sticky = "nsew",
@@ -187,7 +271,7 @@ def app_window():
         pady = 10
     )
 
-    table_frame.grid(
+    notebook_table_viz.grid(
         row = 0,
         column = 1,
         sticky = "nsew",
@@ -199,12 +283,16 @@ def app_window():
     app.rowconfigure(0, weight = 1)
     app.columnconfigure(1, weight = 1)
     controls_frame.rowconfigure((0, 1, 2, 3), weight = 1)
+    controls_frame.columnconfigure(0, weight = 1)
+    visualize_data_frame.rowconfigure((0, 1), weight = 1)
+    visualize_data_frame.columnconfigure(0, weight = 1)
 
         # Controls frame
             # Buttons
     choose_file_button.pack(padx = 5, pady = 5, fill = "both", expand = True)
     export_table_button.pack(padx = 5, pady = 5, fill = "both", expand = True)
     buttons_frame.grid(row = 0, column = 0, pady = (5, 0))
+    # dummy_button.pack()
 
             # Find & Replace
     find_what_label.pack(pady = (5, 0))
@@ -225,13 +313,29 @@ def app_window():
     delete_selected_column_button.pack(padx = 5, pady = 5)
     delete_selected_column_frame.grid(row = 3, column = 0, padx = 10)
 
-
         # Table frame
     table_layout.grid(row = 0, column = 0, sticky = "nsew", padx = 10, pady = 10)
     xs.grid(row = 1, column = 0, sticky = "ew")
     ys.grid(row = 0, column = 1, sticky = "ns")
     table_frame.rowconfigure(0, weight = 1)
     table_frame.columnconfigure(0, weight = 1)
+
+        # Viz frame
+    viz_canvas.get_tk_widget().pack(
+        fill = "both",
+        expand = True
+    )
+
+        # Viz types frame
+            # Barplot
+    barplot_label.pack(padx = 5, pady = (5, 0), fill = "both", expand = True)
+    barplot_button.pack(padx = 5, pady = (0, 5), fill = "both", expand = True)
+    barplot_frame.grid(row = 0, column = 0, sticky = "nsew", padx = 5, pady = 5)
+
+            # Lineplot
+    lineplot_label.pack(padx = 5, pady = (5, 0), fill = "both", expand = True)
+    lineplot_button.pack(padx = 5, pady = (0, 5), fill = "both", expand = True)
+    lineplot_frame.grid(row = 1, column = 0, sticky = "nsew", padx = 5, pady = 5)
 
 ###########################
     app.mainloop()
@@ -345,39 +449,52 @@ def export_table(widget):
             for row in items:
                 writer.writerow(row)
 
+def get_table_content(widget):
+    current_column_headers = list(widget["column"])
+    current_table_content = []
+    for item in widget.get_children():
+        # current_table_content.append([x for x in widget.item(item)["values"]]) # This solution doesnt work for some reason.
+        current_table_content.append(widget.item(item)["values"])
+
+    data_frame = pd.DataFrame(
+        data = current_table_content,
+        columns = current_column_headers
+        )
+
+    return current_column_headers, current_table_content, data_frame
+
+
 
 def delete_selected_column(combobox_variable, widget, combobox):
     selected_column = combobox_variable.get()
-    selected_column_id = None
-    columns = widget["column"]
-    column_info = []
-    for i in columns:
-        column_info.append({i: columns.index(i)})
-    for dict in column_info:
-        for key in dict:
-            if key == selected_column:
-                selected_column_id = dict[key]
+    columns = list(widget["columns"])
+    
+    if selected_column in columns:
+        selected_column_id = columns.index(selected_column)
+    else:
+        return
 
     new_table_content = []
     for item in widget.get_children():
-        new_table_content.append([x for x in widget.item(item)["values"] if widget.item(item)["values"].index(x) != selected_column_id])
+        values = list(widget.item(item)["values"])
+        del values[selected_column_id]
+        new_table_content.append(values)
 
-    new_column_headers = []
-    new_column_headers = [x for x in columns if columns.index(x) != selected_column_id]
-
-    for item in widget.get_children(): # This part clears the table.
+    new_column_headers = [col for i, col in enumerate(columns) if i != selected_column_id]
+    
+    for item in widget.get_children():  # Clear the table.
         widget.delete(item)
 
-    combobox["values"] = new_column_headers # This part updates the dropdown menu.
+    combobox["values"] = new_column_headers  # Update the dropdown menu.
 
-    try: # This part sets the current dropdown item to the new available item and deletes the widget if user deletes all columns.
-        if selected_column_id != None:
-            combobox.set(new_column_headers[0])
-    except IndexError:
-        widget.delete()
-    widget["columns"] = tuple(new_column_headers)
+    if new_column_headers:
+        combobox.set(new_column_headers[0])
+    else:
+        combobox.set("")
+
+    widget["columns"] = new_column_headers
     for column in widget["columns"]:
-        widget.heading(column, text = column)
+        widget.heading(column, text=column)
 
     for row in new_table_content:
         widget.insert(
@@ -385,6 +502,207 @@ def delete_selected_column(combobox_variable, widget, combobox):
             index = "end",
             values = tuple(row)
         )
+
+def barplot_show(data, **kwargs):
+    plot_parameters = {
+        "data": data
+    }
+
+    try:
+        if kwargs["hue_column"] != "...":
+            if kwargs["hue_dtype"] != "...":
+                data[kwargs["hue_column"]] = data[kwargs["hue_column"]].astype(kwargs["hue_dtype"])
+                plot_parameters["hue"] = kwargs["hue_column"]
+
+        if kwargs["colorpalette"] != "...":
+                plot_parameters["palette"] = kwargs["colorpalette"]
+
+# These two blocks must be true for the program to show the graph.
+#########################################################################################################
+        if kwargs["x_column"] != "...":
+            if kwargs["x_dtype"] != "...":
+                data[kwargs["x_column"]] = data[kwargs["x_column"]].astype(kwargs["x_dtype"])
+                plot_parameters["x"] = kwargs["x_column"]
+
+                if kwargs["y_column"] != "...":
+                    if kwargs["y_dtype"] != "...":
+                        data[kwargs["y_column"]] = data[kwargs["y_column"]].astype(kwargs["y_dtype"])
+                        plot_parameters["y"] = kwargs["y_column"]
+
+                        fig = kwargs["canvas"].figure
+                        fig.clear()
+                        ax = fig.add_subplot(111)
+                        ax.set_facecolor((235/255, 235/255, 235/255))
+                        # ax.tick_params(axis='x', fontname='Arial')
+                        # ax.tick_params(axis='y', fontname='Arial')
+                        sns.barplot(**plot_parameters, ax = ax, errorbar = None)
+                        for p in ax.patches: # This loop iterates through each bar (patch) in the plot.
+                            ax.annotate(
+                                f'{p.get_height():.2f}', # 'f'{p.get_height():.2f}'' Formats the height (p.get_height()) of the bar to two decimal places (:.2f).
+                                (p.get_x() + p.get_width() / 2., p.get_height()), # Specifies the position where the annotation text will be placed. 'p.get_x() + p.get_width() / 2.' calculates the x-coordinate at the center of the bar. 'p.get_height()' uses the bar's height as the y-coordinate for the annotation.
+                                ha = 'center',
+                                va = 'center',
+                                fontsize = 10,
+                                color = 'black',
+                                xytext = (0, 5),
+                                textcoords = 'offset points'
+                            )
+                        kwargs["canvas"].draw()
+#########################################################################################################
+
+    except ValueError:
+        messagebox.showinfo(title = "Incorrect dtype", message = "You selected an incorrect data type for one or more of your columns.")
+
+    # Visualization functions
+###########################
+def barplot_options(widget, canvas):
+    column_headers, table_content, data_frame = get_table_content(widget)
+
+    options = tk.Toplevel()
+    options.title("Specify options.")
+
+    dummy_button = ttk.Button(
+        master = options,
+        text = "Viz!",
+        command = lambda: barplot_show(
+            data = data_frame,
+            x_column = x_dropdown_value.get(),
+            y_column = y_dropdown_value.get(),
+            x_dtype = x_dtype_value.get(),
+            y_dtype = y_dtype_value.get(),
+            hue_column = hue_dropdown_value.get(),
+            hue_dtype = hue_dtype_value.get(),
+            colorpalette = colorpalette_dropdown_value.get(),
+            canvas = canvas
+        )
+    )
+
+    dummy_label = ttk.Label(
+        master = options,
+        text = "dtype"
+    )
+
+    x_dtype_value = tk.StringVar(value = "...")
+    x_dropdown_value = tk.StringVar(value = "...")
+    x_label = ttk.Label(
+        master = options,
+        text = "X: "
+    )
+    x = ttk.Combobox(
+        master = options,
+        state = "readonly",
+        textvariable = x_dropdown_value
+    )
+    x_dtype = ttk.Combobox(
+        master = options,
+        state = "readonly",
+        textvariable = x_dtype_value
+    )
+
+    y_dtype_value = tk.StringVar(value = "...")
+    y_dropdown_value = tk.StringVar(value = "...")
+    y_label = ttk.Label(
+        master = options,
+        text = "Y: "
+    )
+    y = ttk.Combobox(
+        master = options,
+        state = "readonly",
+        textvariable = y_dropdown_value
+    )
+    y_dtype = ttk.Combobox(
+        master = options,
+        state = "readonly",
+        textvariable = y_dtype_value
+    )
+
+    hue_dtype_value = tk.StringVar(value = "...")
+    hue_dropdown_value = tk.StringVar(value = "...")
+    hue_label = ttk.Label(
+        master = options,
+        text = "Hue: "
+    )
+    hue = ttk.Combobox(
+        master = options,
+        state = "readonly",
+        textvariable = hue_dropdown_value
+    )
+    hue_dtype = ttk.Combobox(
+        master = options,
+        state = "readonly",
+        textvariable = hue_dtype_value
+    )
+
+    colorpalette_dropdown_value = tk.StringVar(value = "...")
+    colorpalette_label = ttk.Label(
+        master = options,
+        text = "Color palette: "
+    )
+    colorpalette = ttk.Combobox(
+        master = options,
+        state = "readonly",
+        textvariable = colorpalette_dropdown_value
+    )
+
+    dummy_label.grid(row = 0, column = 2)
+    x_label.grid(row = 1, column = 0, padx = 5, pady = 5)
+    x.grid(row = 1, column = 1, padx = 5, pady = 5)
+    x_dtype.grid(row = 1, column = 2, padx = 5, pady = 5)
+
+    y_label.grid(row = 2, column = 0, padx = 5, pady = 5)
+    y.grid(row = 2, column = 1, padx = 5, pady = 5)
+    y_dtype.grid(row = 2, column = 2, padx = 5, pady = 5)
+
+    hue_label.grid(row = 3, column = 0, padx = 5, pady = 5)
+    hue.grid(row = 3, column = 1, padx = 5, pady = 5)
+    hue_dtype.grid(row = 3, column = 2, padx = 5, pady = 5)
+
+    colorpalette_label.grid(row = 4, column = 0, padx = 5, pady = 5)
+    colorpalette.grid(row = 4, column = 1, padx = 5, pady = 5)
+
+    dummy_button.grid(row = 5, column = 1, padx = 5, pady = 5)
+
+    x["values"] = column_headers
+    x_dtype["value"] = ["string", "int", "float"]
+
+    y["values"] = column_headers
+    y_dtype["value"] = ["string", "int", "float"]
+
+    hue["values"] = column_headers
+    hue_dtype["value"] = ["string", "int", "float"]
+
+    colorpalette["values"] = [
+        "Greens",
+        "Blues",
+        "Oranges",
+        "Purples",
+        "YlOrBr",
+        "YlOrRd",
+        "OrRd",
+        "BuGn",
+        "BuPu",
+        "GnBu",
+        "PuBu",
+        "PuBuGn",
+        "YlGn",
+        "YlGnBu",
+        "viridis",
+        "plasma",
+        "magma",
+        "inferno",
+        "RdYlBu",
+        "RdYlGn",
+        "BrBG",
+        "PiYG",
+        "PRGn",
+        "PuOr",
+        "RdBu",
+        "Spectral",
+        "coolwarm",
+        "bwr",
+        "seismic"
+    ]
+
 
 ###########################
 
