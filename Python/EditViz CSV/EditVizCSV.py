@@ -536,17 +536,19 @@ def barplot_show(data, **kwargs):
                         # ax.tick_params(axis='x', fontname='Arial')
                         # ax.tick_params(axis='y', fontname='Arial')
                         sns.barplot(**plot_parameters, ax = ax, errorbar = None)
-                        for p in ax.patches: # This loop iterates through each bar (patch) in the plot.
-                            ax.annotate(
-                                f'{p.get_height():.2f}', # 'f'{p.get_height():.2f}'' Formats the height (p.get_height()) of the bar to two decimal places (:.2f).
-                                (p.get_x() + p.get_width() / 2., p.get_height()), # Specifies the position where the annotation text will be placed. 'p.get_x() + p.get_width() / 2.' calculates the x-coordinate at the center of the bar. 'p.get_height()' uses the bar's height as the y-coordinate for the annotation.
-                                ha = 'center',
-                                va = 'center',
-                                fontsize = 10,
-                                color = 'black',
-                                xytext = (0, 5),
-                                textcoords = 'offset points'
-                            )
+                        # for p in ax.patches: # This loop iterates through each bar (patch) in the plot.
+                        #     ax.annotate(
+                        #         f'{p.get_height():.2f}', # 'f'{p.get_height():.2f}'' Formats the height (p.get_height()) of the bar to two decimal places (:.2f).
+                        #         (p.get_x() + p.get_width() / 2., p.get_height()), # Specifies the position where the annotation text will be placed. 'p.get_x() + p.get_width() / 2.' calculates the x-coordinate at the center of the bar. 'p.get_height()' uses the bar's height as the y-coordinate for the annotation.
+                        #         ha = 'center',
+                        #         va = 'center',
+                        #         fontsize = 10,
+                        #         color = 'black',
+                        #         xytext = (0, 5),
+                        #         textcoords = 'offset points'
+                        #     )
+                        for container in ax.containers:  # This handles grouped bars with hue
+                            ax.bar_label(container, fmt='%.2f', label_type='edge', fontsize=10, color='black')
                         kwargs["canvas"].draw()
 #########################################################################################################
 
