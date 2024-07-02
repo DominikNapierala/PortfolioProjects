@@ -2,6 +2,7 @@ import pandas as pd
 import tkinter as tk
 import seaborn as sns
 import matplotlib.pyplot as plt
+import customtkinter as ctk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter import ttk
 from tkinter import messagebox
@@ -9,97 +10,118 @@ from typing import Union
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import csv
 
-sns.set_theme(font = "Bahnschrift")
-
 def main():
+    ctk.set_appearance_mode("light")
+    ctk.set_default_color_theme("green")
+    sns.set_theme(font = "Bahnschrift", font_scale = 2)
     app_window()
 
 def app_window():
-    button_font = ("Arial", 10, "normal")
-    app = tk.Tk() # This line creates the instance of the app.
-    app.geometry("1000x550")
-    app.wm_minsize(1000, 550)
+    app = ctk.CTk() # This line creates the instance of the app.
+    app.geometry("1000x610")
+    app.wm_minsize(1000, 610)
     app.title("CSV file modifier and data visualizer")
+    global button_font
+    button_font = ctk.CTkFont(family="Bahnschrift Condensed", size = 20)
+    global label_font
+    label_font = ctk.CTkFont(family="Bahnschrift Condensed", size = 18)
+
+    treeview_item_font = ("Bahnschrift Condensed", 20)
+    style = ttk.Style()
+    style.configure('Treeview', font = treeview_item_font, rowheight = 30)
+    style.configure('Treeview.Heading', font = (treeview_item_font[0], treeview_item_font[1] + 2))
+
+    border_color = "#84A98C" 
 
 # Frames
 ###########################
     # Notebooks
-    notebook_controls = ttk.Notebook(app)
-    notebook_table_viz = ttk.Notebook(app)
+    notebook_controls = ctk.CTkTabview(
+        app,
+        width = 250,
+        fg_color = "#84A98C",
+        segmented_button_fg_color = "#52796F",
+        segmented_button_selected_color = "#ccff33",
+        segmented_button_selected_hover_color = "#52796F",
+        text_color = "#2F3E46"
+    )
+    data_options_tab = notebook_controls.add("Data")
+    viz_options_tab = notebook_controls.add("Graphs")
+
+    notebook_table_viz = ctk.CTkTabview(
+        app,
+        fg_color = "#84A98C",
+        segmented_button_fg_color = "#52796F",
+        segmented_button_selected_color = "#ccff33",
+        segmented_button_selected_hover_color = "#52796F",
+        text_color = "#2F3E46"
+    )
+    table_tab = notebook_table_viz.add("Table")
+    viz_tab = notebook_table_viz.add("Visualization")
     ###########################
 
     # Controls notebook frames
-    controls_frame = ttk.Frame(
-        master = notebook_controls,
-        borderwidth = 1,
-        relief = "solid"
+    controls_frame = ctk.CTkFrame(
+        master = data_options_tab,
+        border_width = 1,
+        border_color = border_color
     )
 
-    visualize_data_frame = ttk.Frame(
-        master = notebook_controls,
-        borderwidth = 1,
-        relief = "solid"
+    visualize_data_frame = ctk.CTkFrame(
+        master = viz_options_tab,
+        border_width = 1,
+        border_color = border_color
     )
     ###########################
 
     # Table & viz notebook frames
-    table_frame = ttk.Frame(
-        master = notebook_table_viz,
-        borderwidth = 1,
-        relief = "solid"
+    table_frame = ctk.CTkFrame(
+        master = table_tab,
+        border_width = 0,
+        border_color = border_color
     )
 
-    viz_frame = ttk.Frame(
-        master = notebook_table_viz,
-        borderwidth = 1,
-        relief = "solid"
-    )
-    ###########################
-
-    buttons_frame = ttk.Frame(
-        master = controls_frame,
-        borderwidth = 1,
-        relief = "solid"
-    )
-
-    replace_frame = ttk.Frame(
-        master = controls_frame,
-        borderwidth = 1,
-        relief = "solid"
-    )
-
-    delete_selected_rows_frame = ttk.Frame(
-        master = controls_frame,
-        borderwidth = 1,
-        relief = "solid"
-    )
-
-    delete_selected_column_frame = ttk.Frame(
-        master = controls_frame,
-        borderwidth = 1,
-        relief = "solid"
+    viz_frame = ctk.CTkFrame(
+        master = viz_tab,
+        border_width = 1,
+        border_color = border_color
     )
     ###########################
 
-    # Viz type frames
-    barplot_frame = ttk.Frame(
-        master = visualize_data_frame,
-        borderwidth = 1,
-        relief = "solid"
+    buttons_frame = ctk.CTkFrame(
+        master = controls_frame,
+        border_width = 1,
+        border_color = border_color,
+        fg_color = "#e9ecef"
     )
 
-    lineplot_frame = ttk.Frame(
-        master = visualize_data_frame,
-        borderwidth = 1,
-        relief = "solid"
+    replace_frame = ctk.CTkFrame(
+        master = controls_frame,
+        border_width = 1,
+        border_color = border_color,
+        fg_color = "#e9ecef"
+    )
+
+    delete_selected_rows_frame = ctk.CTkFrame(
+        master = controls_frame,
+        border_width = 1,
+        border_color = border_color,
+        fg_color = "#e9ecef"
+    )
+
+    delete_selected_column_frame = ctk.CTkFrame(
+        master = controls_frame,
+        border_width = 1,
+        border_color = border_color,
+        fg_color = "#e9ecef"
     )
 
     ###########################
-    notebook_controls.add(controls_frame, text = "data")
-    notebook_controls.add(visualize_data_frame, text = "viz")
+    # notebook_controls.add(controls_frame, text = "data")
+    # notebook_controls.add(visualize_data_frame, text = "viz")
 
-    notebook_table_viz.add(table_frame, text = "table")
-    notebook_table_viz.add(viz_frame, text = "viz")
+    # notebook_table_viz.add(table_frame, text = "table")
+    # notebook_table_viz.add(viz_frame, text = "viz")
 
 ###########################
 
@@ -108,19 +130,21 @@ def app_window():
 
     # Buttons
     ###########################
-    choose_file_button = ttk.Button(
+    choose_file_button = ctk.CTkButton(
         master = buttons_frame,
         text = "Select CSV file",
-        command = lambda: create_table(table_layout, delete_selected_column_dropdown)
+        command = lambda: create_table(table_layout, delete_selected_column_dropdown),
+        font = button_font
     )
 
-    export_table_button = ttk.Button(
+    export_table_button = ctk.CTkButton(
         master = buttons_frame,
         text = "Export table",
-        command = lambda: export_table(table_layout)
+        command = lambda: export_table(table_layout),
+        font = button_font
     )
 
-    # dummy_button = ttk.Button(
+    # dummy_button = ctk.CTkButton(
     #     master = buttons_frame,
     #     text = "table content",
     #     command = lambda: get_table_content(table_layout)
@@ -134,15 +158,15 @@ def app_window():
         show = "headings"
     )
 
-    ys = ttk.Scrollbar(
+    ys = ctk.CTkScrollbar(
         master = table_frame,
-        orient = 'vertical',
+        orientation = 'vertical',
         command = table_layout.yview
     )
 
-    xs = ttk.Scrollbar(
+    xs = ctk.CTkScrollbar(
         master = table_frame,
-        orient = 'horizontal',
+        orientation = 'horizontal',
         command = table_layout.xview
     )
 
@@ -153,95 +177,133 @@ def app_window():
     ###########################
 
         # Variables
-    find_what_var = tk.StringVar()
-    replace_with_var = tk.StringVar()
+    find_what_var = ctk.StringVar()
+    replace_with_var = ctk.StringVar()
 
         # Widgets
-    find_what_label = ttk.Label(
+    find_what_label = ctk.CTkLabel(
         master = replace_frame,
-        text = "Find:"
+        text = "Find:",
+        font = label_font
     )
 
-    find_what = ttk.Entry(
+    find_what = ctk.CTkEntry(
         master = replace_frame,
-        state = "enabled",
         textvariable = find_what_var
     )
 
-    replace_with_label = ttk.Label(
+    replace_with_label = ctk.CTkLabel(
         master = replace_frame,
-        text = "Replace with:"
+        text = "Replace with:",
+        font = label_font
     )
 
-    replace_with = ttk.Entry(
+    replace_with = ctk.CTkEntry(
         master = replace_frame,
-        state = "enabled",
         textvariable = replace_with_var
     )
 
-    replace_button = ttk.Button(
+    replace_button = ctk.CTkButton(
         master = replace_frame,
         text = "Replace",
-        command = lambda: replace_values(table_layout, tuple([find_what_var.get(), replace_with_var.get()]))
+        command = lambda: replace_values(table_layout, tuple([find_what_var.get(), replace_with_var.get()])),
+        font = button_font
     )
 
     # Remove selected rows
     ###########################
 
         # Widgets
-    delete_selected_rows_label = ttk.Label(
+    delete_selected_rows_label = ctk.CTkLabel(
         master = delete_selected_rows_frame,
-        text = "Select rows you want to delete."
+        text = "Select rows you want to delete.",
+        font = label_font
     )
 
-    delete_selected_rows_button = ttk.Button(
+    delete_selected_rows_button = ctk.CTkButton(
         master = delete_selected_rows_frame,
         text = "Delete rows",
-        command = lambda: delete_selected_rows(table_layout)
+        command = lambda: delete_selected_rows(table_layout),
+        font = button_font
     )
 
     # Remove selected column
     ###########################
         # Variables
-    dropdown_menu_value = tk.StringVar(value = "...")
+    dropdown_menu_value = ctk.StringVar(value = "...")
 
         # Widgets
-    delete_selected_column_label = ttk.Label(
+    delete_selected_column_label = ctk.CTkLabel(
         master = delete_selected_column_frame,
-        text = "Select a column to delete."
+        text = "Select a column to delete.",
+        font = label_font
     )
-    delete_selected_column_dropdown = ttk.Combobox(
+    delete_selected_column_dropdown = ctk.CTkComboBox(
         master = delete_selected_column_frame,
         state = "readonly",
-        textvariable = dropdown_menu_value
+        variable = dropdown_menu_value,
+        font = label_font,
+        dropdown_font = label_font
     )
-    delete_selected_column_button = ttk.Button(
+    delete_selected_column_button = ctk.CTkButton(
         master = delete_selected_column_frame,
         text = "Delete",
-        command = lambda: delete_selected_column(dropdown_menu_value, table_layout, delete_selected_column_dropdown)
+        command = lambda: delete_selected_column(dropdown_menu_value, table_layout, delete_selected_column_dropdown),
+        font = button_font
     )
 
     # Viz types
     ###########################
         # Barplot
-    barplot_label = ttk.Label(
-        master = barplot_frame,
-        text = "Barplot"
-    )
-    barplot_button = ttk.Button(
-        master = barplot_frame,
-        text = "Select",
-        command = lambda: barplot_options(table_layout, viz_canvas)
+    # barplot_label = ctk.CTkLabel(
+    #     master = barplot_frame,
+    #     text = "Barplot"
+    # )
+
+    barplot_button = ctk.CTkButton(
+        master = visualize_data_frame,
+        text = "Barplot",
+        command = lambda: barplot_options(table_layout, viz_canvas),
+        font = button_font
     )
 
         # Lineplot
-    lineplot_label = ttk.Label(
-        master = lineplot_frame,
-        text = "Lineplot"
+    # lineplot_label = ctk.CTkLabel(
+    #     master = lineplot_frame,
+    #     text = "Lineplot"
+    # )
+
+    lineplot_button = ctk.CTkButton(
+        master = visualize_data_frame,
+        text = "Lineplot",
+        command = lambda: lineplot_options(table_layout, viz_canvas),
+        font = button_font
     )
-    lineplot_button = ttk.Button(
-        master = lineplot_frame,
-        text = "Select"
+
+        # Scatterplot
+    # scatterplot_label = ctk.CTkLabel(
+    #     master = scatterplot_frame,
+    #     text = "Scatterplot"
+    # )
+
+    scatterplot_button = ctk.CTkButton(
+        master = visualize_data_frame,
+        text = "Scatterplot",
+        command = lambda: scatterplot_options(table_layout, viz_canvas),
+        font = button_font
+    )
+
+        # Boxplot
+    # boxplot_label = ctk.CTkLabel(
+    #     master = boxplot_frame,
+    #     text = "Boxplot"
+    # )
+
+    boxplot_button = ctk.CTkButton(
+        master = visualize_data_frame,
+        text = "Boxplot",
+        command = lambda: boxplot_options(table_layout, viz_canvas),
+        font = button_font
     )
 
     # Viz canvas
@@ -282,9 +344,11 @@ def app_window():
     # Widgets
     app.rowconfigure(0, weight = 1)
     app.columnconfigure(1, weight = 1)
+    controls_frame.pack(fill = "both", expand = True)
     controls_frame.rowconfigure((0, 1, 2, 3), weight = 1)
     controls_frame.columnconfigure(0, weight = 1)
-    visualize_data_frame.rowconfigure((0, 1), weight = 1)
+    visualize_data_frame.pack(fill = "both", expand = True)
+    visualize_data_frame.rowconfigure((0, 1, 2, 3), weight = 1)
     visualize_data_frame.columnconfigure(0, weight = 1)
 
         # Controls frame
@@ -311,16 +375,18 @@ def app_window():
     delete_selected_column_label.pack(padx = 5, pady = 5)
     delete_selected_column_dropdown.pack(padx = 5, pady = 5)
     delete_selected_column_button.pack(padx = 5, pady = 5)
-    delete_selected_column_frame.grid(row = 3, column = 0, padx = 10)
+    delete_selected_column_frame.grid(row = 3, column = 0, padx = 10, pady = (0, 5))
 
         # Table frame
     table_layout.grid(row = 0, column = 0, sticky = "nsew", padx = 10, pady = 10)
-    xs.grid(row = 1, column = 0, sticky = "ew")
-    ys.grid(row = 0, column = 1, sticky = "ns")
+    xs.grid(row = 1, column = 0, sticky = "ew", padx = 5, pady = (0, 5))
+    ys.grid(row = 0, column = 1, sticky = "ns", padx = (0, 5), pady = 5)
+    table_frame.pack(fill = "both", expand = True)
     table_frame.rowconfigure(0, weight = 1)
     table_frame.columnconfigure(0, weight = 1)
 
         # Viz frame
+    viz_frame.pack(fill = "both", expand = True)
     viz_canvas.get_tk_widget().pack(
         fill = "both",
         expand = True
@@ -328,14 +394,26 @@ def app_window():
 
         # Viz types frame
             # Barplot
-    barplot_label.pack(padx = 5, pady = (5, 0), fill = "both", expand = True)
-    barplot_button.pack(padx = 5, pady = (0, 5), fill = "both", expand = True)
-    barplot_frame.grid(row = 0, column = 0, sticky = "nsew", padx = 5, pady = 5)
+    # barplot_label.pack(padx = 5, pady = (5, 0), anchor = "center")
+    # barplot_button.pack(padx = 5, pady = (0, 5))
+    barplot_button.grid(row = 0, column = 0, padx = 5, pady = 5)
 
             # Lineplot
-    lineplot_label.pack(padx = 5, pady = (5, 0), fill = "both", expand = True)
-    lineplot_button.pack(padx = 5, pady = (0, 5), fill = "both", expand = True)
-    lineplot_frame.grid(row = 1, column = 0, sticky = "nsew", padx = 5, pady = 5)
+    # lineplot_label.pack(padx = 5, pady = (5, 0), anchor = "center")
+    # lineplot_button.pack(padx = 5, pady = (0, 5))
+    lineplot_button.grid(row = 1, column = 0,
+                        #sticky = "nsew",
+                        padx = 5, pady = 5)
+
+            # Scatterplot
+    # scatterplot_label.pack(padx = 5, pady = (5, 0), anchor = "center")
+    # scatterplot_button.pack(padx = 5, pady = (0, 5))
+    scatterplot_button.grid(row = 2, column = 0, padx = 5, pady = 5)
+
+            # Boxplot
+    # boxplot_label.pack(padx = 5, pady = (5, 0), anchor = "center")
+    # boxplot_button.pack(padx = 5, pady = (0, 5))
+    boxplot_button.grid(row = 3, column = 0, padx = 5, pady = 5)
 
 ###########################
     app.mainloop()
@@ -391,7 +469,7 @@ def create_table(widget, combobox):
         if column_names:
             #print(column_names)
             widget["columns"] = column_names
-            combobox["values"] = column_names # This line appends column names to the dropdown menu for column deletion.
+            combobox["values"] = combobox.configure(values = column_names) # This line appends column names to the dropdown menu for column deletion.
             for column in widget["columns"]:
                 widget.heading(column, text = column)
             data_frame = return_data_frame(file_path, column_names)
@@ -485,7 +563,7 @@ def delete_selected_column(combobox_variable, widget, combobox):
     for item in widget.get_children():  # Clear the table.
         widget.delete(item)
 
-    combobox["values"] = new_column_headers  # Update the dropdown menu.
+    combobox["values"] = combobox.configure(values = new_column_headers)  # Update the dropdown menu.
 
     if new_column_headers:
         combobox.set(new_column_headers[0])
@@ -535,7 +613,7 @@ def barplot_show(data, **kwargs):
                         ax.set_facecolor((235/255, 235/255, 235/255))
                         # ax.tick_params(axis='x', fontname='Arial')
                         # ax.tick_params(axis='y', fontname='Arial')
-                        sns.barplot(**plot_parameters, ax = ax, errorbar = None)
+                        sns.barplot(**plot_parameters, ax = ax, errorbar = None, estimator = kwargs["y_aggregation"])
                         # for p in ax.patches: # This loop iterates through each bar (patch) in the plot.
                         #     ax.annotate(
                         #         f'{p.get_height():.2f}', # 'f'{p.get_height():.2f}'' Formats the height (p.get_height()) of the bar to two decimal places (:.2f).
@@ -548,7 +626,145 @@ def barplot_show(data, **kwargs):
                         #         textcoords = 'offset points'
                         #     )
                         for container in ax.containers:  # This handles grouped bars with hue
-                            ax.bar_label(container, fmt='%.2f', label_type='edge', fontsize=10, color='black')
+                            ax.bar_label(container, fmt='%.2f', label_type='edge', fontsize=15, color='black')
+                        kwargs["canvas"].draw()
+#########################################################################################################
+
+    except ValueError:
+        messagebox.showinfo(title = "Incorrect dtype", message = "You selected an incorrect data type for one or more of your columns.")
+
+
+def boxplot_show(data, **kwargs):
+    plot_parameters = {
+        "data": data
+    }
+
+    try:
+        if kwargs["hue_column"] != "...":
+            if kwargs["hue_dtype"] != "...":
+                data[kwargs["hue_column"]] = data[kwargs["hue_column"]].astype(kwargs["hue_dtype"])
+                plot_parameters["hue"] = kwargs["hue_column"]
+
+        if kwargs["colorpalette"] != "...":
+                plot_parameters["palette"] = kwargs["colorpalette"]
+
+# These two blocks must be true for the program to show the graph.
+#########################################################################################################
+        if kwargs["x_column"] != "...":
+            if kwargs["x_dtype"] != "...":
+                data[kwargs["x_column"]] = data[kwargs["x_column"]].astype(kwargs["x_dtype"])
+                plot_parameters["x"] = kwargs["x_column"]
+
+                if kwargs["y_column"] != "...":
+                    if kwargs["y_dtype"] != "...":
+                        data[kwargs["y_column"]] = data[kwargs["y_column"]].astype(kwargs["y_dtype"])
+                        plot_parameters["y"] = kwargs["y_column"]
+
+                        fig = kwargs["canvas"].figure
+                        fig.clear()
+                        ax = fig.add_subplot(111)
+                        ax.set_facecolor((235/255, 235/255, 235/255))
+                        sns.boxplot(**plot_parameters, ax = ax)
+
+                        kwargs["canvas"].draw()
+#########################################################################################################
+
+    except ValueError:
+        messagebox.showinfo(title = "Incorrect dtype", message = "You selected an incorrect data type for one or more of your columns.")
+
+
+def lineplot_show(data, **kwargs):
+    plot_parameters = {
+        "data": data
+    }
+
+    try:
+        if kwargs["hue_column"] != "...":
+            if kwargs["hue_dtype"] != "...":
+                data[kwargs["hue_column"]] = data[kwargs["hue_column"]].astype(kwargs["hue_dtype"])
+                plot_parameters["hue"] = kwargs["hue_column"]
+
+        if kwargs["colorpalette"] != "...":
+                plot_parameters["palette"] = kwargs["colorpalette"]
+
+# These two blocks must be true for the program to show the graph.
+#########################################################################################################
+        if kwargs["x_column"] != "...":
+            if kwargs["x_dtype"] != "...":
+                data[kwargs["x_column"]] = data[kwargs["x_column"]].astype(kwargs["x_dtype"])
+                plot_parameters["x"] = kwargs["x_column"]
+
+                if kwargs["y_column"] != "...":
+                    if kwargs["y_dtype"] != "...":
+                        data[kwargs["y_column"]] = data[kwargs["y_column"]].astype(kwargs["y_dtype"])
+                        plot_parameters["y"] = kwargs["y_column"]
+
+                        fig = kwargs["canvas"].figure
+                        fig.clear()
+                        ax = fig.add_subplot(111)
+                        ax.set_facecolor((235/255, 235/255, 235/255))
+                        sns.lineplot(**plot_parameters, ax = ax, errorbar = None)
+
+                        # for line in ax.lines: # This part generates a label for each data point but it looks bad. Too crowded.
+                        #     x_data = line.get_xdata()
+                        #     y_data = line.get_ydata()
+                        #     for i, (x, y) in enumerate(zip(x_data, y_data)):
+                        #         ax.text(x, y, f'{y:.2f}', color='black', fontsize=10, ha='center', va='bottom')
+
+                        kwargs["canvas"].draw()
+#########################################################################################################
+
+    except ValueError:
+        messagebox.showinfo(title = "Incorrect dtype", message = "You selected an incorrect data type for one or more of your columns.")
+
+
+def scatterplot_show(data, **kwargs):
+    plot_parameters = {
+        "data": data
+    }
+
+# Optional arguments
+#########################################################################################################
+    try:
+        if kwargs["hue_column"] != "...":
+            if kwargs["hue_dtype"] != "...":
+                data[kwargs["hue_column"]] = data[kwargs["hue_column"]].astype(kwargs["hue_dtype"])
+                plot_parameters["hue"] = kwargs["hue_column"]
+
+        if kwargs["size_column"] != "...":
+            if kwargs["size_dtype"] != "...":
+                data[kwargs["size_column"]] = data[kwargs["size_column"]].astype(kwargs["size_dtype"])
+                plot_parameters["size"] = kwargs["size_column"]
+
+        if kwargs["colorpalette"] != "...":
+                plot_parameters["palette"] = kwargs["colorpalette"]
+
+# These two blocks must be true for the program to show the graph.
+#########################################################################################################
+        if kwargs["x_column"] != "...":
+            if kwargs["x_dtype"] != "...":
+                data[kwargs["x_column"]] = data[kwargs["x_column"]].astype(kwargs["x_dtype"])
+                plot_parameters["x"] = kwargs["x_column"]
+
+                if kwargs["y_column"] != "...":
+                    if kwargs["y_dtype"] != "...":
+                        data[kwargs["y_column"]] = data[kwargs["y_column"]].astype(kwargs["y_dtype"])
+                        plot_parameters["y"] = kwargs["y_column"]
+
+                        fig = kwargs["canvas"].figure
+                        fig.clear()
+                        ax = fig.add_subplot(111)
+                        ax.set_facecolor((235/255, 235/255, 235/255))
+                        # ax.tick_params(axis='x', fontname='Arial')
+                        # ax.tick_params(axis='y', fontname='Arial')
+                        sns.scatterplot(**plot_parameters, ax = ax)
+
+                        # for line in ax.lines: # This part generates a label for each data point but it looks bad. Too crowded.
+                        #     x_data = line.get_xdata()
+                        #     y_data = line.get_ydata()
+                        #     for i, (x, y) in enumerate(zip(x_data, y_data)):
+                        #         ax.text(x, y, f'{y:.2f}', color='black', fontsize=10, ha='center', va='bottom')
+
                         kwargs["canvas"].draw()
 #########################################################################################################
 
@@ -560,10 +776,11 @@ def barplot_show(data, **kwargs):
 def barplot_options(widget, canvas):
     column_headers, table_content, data_frame = get_table_content(widget)
 
-    options = tk.Toplevel()
-    options.title("Specify options.")
+    options = ctk.CTkToplevel()
+    options.title("Specify barplot options")
+    options.resizable(False, False)
 
-    dummy_button = ttk.Button(
+    dummy_button = ctk.CTkButton(
         master = options,
         text = "Viz!",
         command = lambda: barplot_show(
@@ -572,81 +789,117 @@ def barplot_options(widget, canvas):
             y_column = y_dropdown_value.get(),
             x_dtype = x_dtype_value.get(),
             y_dtype = y_dtype_value.get(),
+            y_aggregation = y_aggregation_value.get(),
             hue_column = hue_dropdown_value.get(),
             hue_dtype = hue_dtype_value.get(),
             colorpalette = colorpalette_dropdown_value.get(),
             canvas = canvas
-        )
+        ),
+        font = button_font
     )
 
-    dummy_label = ttk.Label(
+    dummy_label = ctk.CTkLabel(
         master = options,
-        text = "dtype"
+        text = "Data type",
+        font = label_font
     )
 
-    x_dtype_value = tk.StringVar(value = "...")
-    x_dropdown_value = tk.StringVar(value = "...")
-    x_label = ttk.Label(
+    dummy_label_2 = ctk.CTkLabel(
         master = options,
-        text = "X: "
-    )
-    x = ttk.Combobox(
-        master = options,
-        state = "readonly",
-        textvariable = x_dropdown_value
-    )
-    x_dtype = ttk.Combobox(
-        master = options,
-        state = "readonly",
-        textvariable = x_dtype_value
+        text = "Aggregation",
+        font = label_font
     )
 
-    y_dtype_value = tk.StringVar(value = "...")
-    y_dropdown_value = tk.StringVar(value = "...")
-    y_label = ttk.Label(
+    x_dtype_value = ctk.StringVar(value = "...")
+    x_dropdown_value = ctk.StringVar(value = "...")
+    x_label = ctk.CTkLabel(
         master = options,
-        text = "Y: "
+        text = "X: ",
+        font = label_font
     )
-    y = ttk.Combobox(
+    x = ctk.CTkComboBox(
         master = options,
         state = "readonly",
-        textvariable = y_dropdown_value
+        variable = x_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
     )
-    y_dtype = ttk.Combobox(
+    x_dtype = ctk.CTkComboBox(
         master = options,
         state = "readonly",
-        textvariable = y_dtype_value
+        variable = x_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
     )
 
-    hue_dtype_value = tk.StringVar(value = "...")
-    hue_dropdown_value = tk.StringVar(value = "...")
-    hue_label = ttk.Label(
+    y_dtype_value = ctk.StringVar(value = "...")
+    y_dropdown_value = ctk.StringVar(value = "...")
+    y_aggregation_value = ctk.StringVar(value = "sum")
+    y_label = ctk.CTkLabel(
         master = options,
-        text = "Hue: "
+        text = "Y: ",
+        font = label_font
     )
-    hue = ttk.Combobox(
+    y = ctk.CTkComboBox(
         master = options,
         state = "readonly",
-        textvariable = hue_dropdown_value
+        variable = y_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
     )
-    hue_dtype = ttk.Combobox(
+    y_dtype = ctk.CTkComboBox(
         master = options,
         state = "readonly",
-        textvariable = hue_dtype_value
+        variable = y_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    y_aggregation = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = y_aggregation_value,
+        font = label_font,
+        dropdown_font = label_font
     )
 
-    colorpalette_dropdown_value = tk.StringVar(value = "...")
-    colorpalette_label = ttk.Label(
+    hue_dtype_value = ctk.StringVar(value = "...")
+    hue_dropdown_value = ctk.StringVar(value = "...")
+    hue_label = ctk.CTkLabel(
         master = options,
-        text = "Color palette: "
+        text = "Hue: ",
+        font = label_font
     )
-    colorpalette = ttk.Combobox(
+    hue = ctk.CTkComboBox(
         master = options,
         state = "readonly",
-        textvariable = colorpalette_dropdown_value
+        variable = hue_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    hue_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = hue_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    colorpalette_dropdown_value = ctk.StringVar(value = "...")
+    colorpalette_label = ctk.CTkLabel(
+        master = options,
+        text = "Color palette: ",
+        font = label_font
+    )
+    colorpalette = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = colorpalette_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
     )
 
     dummy_label.grid(row = 0, column = 2)
+    dummy_label_2.grid(row = 0, column = 3)
     x_label.grid(row = 1, column = 0, padx = 5, pady = 5)
     x.grid(row = 1, column = 1, padx = 5, pady = 5)
     x_dtype.grid(row = 1, column = 2, padx = 5, pady = 5)
@@ -654,6 +907,7 @@ def barplot_options(widget, canvas):
     y_label.grid(row = 2, column = 0, padx = 5, pady = 5)
     y.grid(row = 2, column = 1, padx = 5, pady = 5)
     y_dtype.grid(row = 2, column = 2, padx = 5, pady = 5)
+    y_aggregation.grid(row = 2, column = 3, padx = 5, pady = 5)
 
     hue_label.grid(row = 3, column = 0, padx = 5, pady = 5)
     hue.grid(row = 3, column = 1, padx = 5, pady = 5)
@@ -664,16 +918,17 @@ def barplot_options(widget, canvas):
 
     dummy_button.grid(row = 5, column = 1, padx = 5, pady = 5)
 
-    x["values"] = column_headers
-    x_dtype["value"] = ["string", "int", "float"]
+    x["values"] = x.configure(values = column_headers)
+    x_dtype["value"] = x_dtype.configure(values = ["string", "int", "float"])
 
-    y["values"] = column_headers
-    y_dtype["value"] = ["string", "int", "float"]
+    y["values"] = y.configure(values = column_headers)
+    y_dtype["value"] = y_dtype.configure(values = ["string", "int", "float"])
+    y_aggregation["value"] = y_aggregation.configure(values = ["sum", "mean", "max", "min"])
 
-    hue["values"] = column_headers
-    hue_dtype["value"] = ["string", "int", "float"]
+    hue["values"] = hue.configure(values = column_headers)
+    hue_dtype["value"] = hue_dtype.configure(values = ["string", "int", "float"])
 
-    colorpalette["values"] = [
+    colorpalette["values"] = colorpalette.configure(values = [
         "Greens",
         "Blues",
         "Oranges",
@@ -703,7 +958,547 @@ def barplot_options(widget, canvas):
         "coolwarm",
         "bwr",
         "seismic"
-    ]
+    ])
+
+
+def lineplot_options(widget, canvas):
+    column_headers, table_content, data_frame = get_table_content(widget)
+
+    options = tk.Toplevel()
+    options.title("Specify lineplot options")
+    options.resizable(False, False)
+
+    dummy_button = ctk.CTkButton(
+        master = options,
+        text = "Viz!",
+        command = lambda: lineplot_show(
+            data = data_frame,
+            x_column = x_dropdown_value.get(),
+            y_column = y_dropdown_value.get(),
+            x_dtype = x_dtype_value.get(),
+            y_dtype = y_dtype_value.get(),
+            hue_column = hue_dropdown_value.get(),
+            hue_dtype = hue_dtype_value.get(),
+            colorpalette = colorpalette_dropdown_value.get(),
+            canvas = canvas
+        ),
+        font = button_font
+    )
+
+    dummy_label = ctk.CTkLabel(
+        master = options,
+        text = "dtype",
+        font = label_font
+    )
+
+    x_dtype_value = ctk.StringVar(value = "...")
+    x_dropdown_value = ctk.StringVar(value = "...")
+    x_label = ctk.CTkLabel(
+        master = options,
+        text = "X: ",
+        font = label_font
+    )
+    x = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = x_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    x_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = x_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    y_dtype_value = ctk.StringVar(value = "...")
+    y_dropdown_value = ctk.StringVar(value = "...")
+    y_label = ctk.CTkLabel(
+        master = options,
+        text = "Y: ",
+        font = label_font
+    )
+    y = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = y_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    y_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = y_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    hue_dtype_value = ctk.StringVar(value = "...")
+    hue_dropdown_value = ctk.StringVar(value = "...")
+    hue_label = ctk.CTkLabel(
+        master = options,
+        text = "Hue: ",
+        font = label_font
+    )
+    hue = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = hue_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    hue_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = hue_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    colorpalette_dropdown_value = ctk.StringVar(value = "...")
+    colorpalette_label = ctk.CTkLabel(
+        master = options,
+        text = "Color palette: ",
+        font = label_font
+    )
+    colorpalette = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = colorpalette_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    dummy_label.grid(row = 0, column = 2)
+    x_label.grid(row = 1, column = 0, padx = 5, pady = 5)
+    x.grid(row = 1, column = 1, padx = 5, pady = 5)
+    x_dtype.grid(row = 1, column = 2, padx = 5, pady = 5)
+
+    y_label.grid(row = 2, column = 0, padx = 5, pady = 5)
+    y.grid(row = 2, column = 1, padx = 5, pady = 5)
+    y_dtype.grid(row = 2, column = 2, padx = 5, pady = 5)
+
+    hue_label.grid(row = 3, column = 0, padx = 5, pady = 5)
+    hue.grid(row = 3, column = 1, padx = 5, pady = 5)
+    hue_dtype.grid(row = 3, column = 2, padx = 5, pady = 5)
+
+    colorpalette_label.grid(row = 4, column = 0, padx = 5, pady = 5)
+    colorpalette.grid(row = 4, column = 1, padx = 5, pady = 5)
+
+    dummy_button.grid(row = 5, column = 1, padx = 5, pady = 5)
+
+    x["values"] = x.configure(values = column_headers)
+    x_dtype["value"] = x_dtype.configure(values = ["string", "int", "float", "datetime64[ns]"])
+
+    y["values"] = y.configure(values = column_headers)
+    y_dtype["value"] = y_dtype.configure(values = ["string", "int", "float"])
+
+    hue["values"] = hue.configure(values = column_headers)
+    hue_dtype["value"] = hue_dtype.configure(values = ["string", "int", "float"])
+
+    colorpalette["values"] = colorpalette.configure(values = [
+        "Greens",
+        "Blues",
+        "Oranges",
+        "Purples",
+        "YlOrBr",
+        "YlOrRd",
+        "OrRd",
+        "BuGn",
+        "BuPu",
+        "GnBu",
+        "PuBu",
+        "PuBuGn",
+        "YlGn",
+        "YlGnBu",
+        "viridis",
+        "plasma",
+        "magma",
+        "inferno",
+        "RdYlBu",
+        "RdYlGn",
+        "BrBG",
+        "PiYG",
+        "PRGn",
+        "PuOr",
+        "RdBu",
+        "Spectral",
+        "coolwarm",
+        "bwr",
+        "seismic"
+    ])
+
+def scatterplot_options(widget, canvas):
+    column_headers, table_content, data_frame = get_table_content(widget)
+
+    options = tk.Toplevel()
+    options.title("Specify scatterplot options")
+    options.resizable(False, False)
+
+    dummy_button = ctk.CTkButton(
+        master = options,
+        text = "Viz!",
+        command = lambda: scatterplot_show(
+            data = data_frame,
+            x_column = x_dropdown_value.get(),
+            y_column = y_dropdown_value.get(),
+            x_dtype = x_dtype_value.get(),
+            y_dtype = y_dtype_value.get(),
+            hue_column = hue_dropdown_value.get(),
+            hue_dtype = hue_dtype_value.get(),
+            size_column = size_dropdown_value.get(),
+            size_dtype = size_dtype_value.get(),
+            colorpalette = colorpalette_dropdown_value.get(),
+            canvas = canvas
+        ),
+        font = button_font
+    )
+
+    dummy_label = ctk.CTkLabel(
+        master = options,
+        text = "dtype",
+        font = label_font
+    )
+
+    x_dtype_value = ctk.StringVar(value = "...")
+    x_dropdown_value = ctk.StringVar(value = "...")
+    x_label = ctk.CTkLabel(
+        master = options,
+        text = "X: ",
+        font = label_font
+    )
+    x = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = x_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    x_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = x_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    y_dtype_value = ctk.StringVar(value = "...")
+    y_dropdown_value = ctk.StringVar(value = "...")
+    y_label = ctk.CTkLabel(
+        master = options,
+        text = "Y: ",
+        font = label_font
+    )
+    y = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = y_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    y_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = y_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    hue_dtype_value = ctk.StringVar(value = "...")
+    hue_dropdown_value = ctk.StringVar(value = "...")
+    hue_label = ctk.CTkLabel(
+        master = options,
+        text = "Hue: ",
+        font = label_font
+    )
+    hue = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = hue_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    hue_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = hue_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    size_dtype_value = ctk.StringVar(value = "...")
+    size_dropdown_value = ctk.StringVar(value = "...")
+    size_label = ctk.CTkLabel(
+        master = options,
+        text = "Size: ",
+        font = label_font
+    )
+    size = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = size_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    size_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = size_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    colorpalette_dropdown_value = ctk.StringVar(value = "...")
+    colorpalette_label = ctk.CTkLabel(
+        master = options,
+        text = "Color palette: ",
+        font = label_font
+    )
+    colorpalette = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = colorpalette_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    dummy_label.grid(row = 0, column = 2)
+    x_label.grid(row = 1, column = 0, padx = 5, pady = 5)
+    x.grid(row = 1, column = 1, padx = 5, pady = 5)
+    x_dtype.grid(row = 1, column = 2, padx = 5, pady = 5)
+
+    y_label.grid(row = 2, column = 0, padx = 5, pady = 5)
+    y.grid(row = 2, column = 1, padx = 5, pady = 5)
+    y_dtype.grid(row = 2, column = 2, padx = 5, pady = 5)
+
+    hue_label.grid(row = 3, column = 0, padx = 5, pady = 5)
+    hue.grid(row = 3, column = 1, padx = 5, pady = 5)
+    hue_dtype.grid(row = 3, column = 2, padx = 5, pady = 5)
+
+    size_label.grid(row = 4, column = 0, padx = 5, pady = 5)
+    size.grid(row = 4, column = 1, padx = 5, pady = 5)
+    size_dtype.grid(row = 4, column = 2, padx = 5, pady = 5)
+
+    colorpalette_label.grid(row = 5, column = 0, padx = 5, pady = 5)
+    colorpalette.grid(row = 5, column = 1, padx = 5, pady = 5)
+
+    dummy_button.grid(row = 6, column = 1, padx = 5, pady = 5)
+
+    x["values"] = x.configure(values = column_headers)
+    x_dtype["value"] = x_dtype.configure(values = ["int", "float", "datetime64[ns]"])
+
+    y["values"] = y.configure(values = column_headers)
+    y_dtype["value"] = y_dtype.configure(values = ["int", "float"])
+
+    hue["values"] = hue.configure(values = column_headers)
+    hue_dtype["value"] = hue_dtype.configure(values = ["string", "int", "float"])
+
+    size["values"] = size.configure(values = column_headers)
+    size_dtype["value"] = size_dtype.configure(values = ["int", "float"])
+
+    colorpalette["values"] = colorpalette.configure(values = [
+        "Greens",
+        "Blues",
+        "Oranges",
+        "Purples",
+        "YlOrBr",
+        "YlOrRd",
+        "OrRd",
+        "BuGn",
+        "BuPu",
+        "GnBu",
+        "PuBu",
+        "PuBuGn",
+        "YlGn",
+        "YlGnBu",
+        "viridis",
+        "plasma",
+        "magma",
+        "inferno",
+        "RdYlBu",
+        "RdYlGn",
+        "BrBG",
+        "PiYG",
+        "PRGn",
+        "PuOr",
+        "RdBu",
+        "Spectral",
+        "coolwarm",
+        "bwr",
+        "seismic"
+    ])
+
+
+def boxplot_options(widget, canvas):
+    column_headers, table_content, data_frame = get_table_content(widget)
+
+    options = tk.Toplevel()
+    options.title("Specify boxplot options")
+    options.resizable(False, False)
+
+    dummy_button = ctk.CTkButton(
+        master = options,
+        text = "Viz!",
+        command = lambda: boxplot_show(
+            data = data_frame,
+            x_column = x_dropdown_value.get(),
+            y_column = y_dropdown_value.get(),
+            x_dtype = x_dtype_value.get(),
+            y_dtype = y_dtype_value.get(),
+            hue_column = hue_dropdown_value.get(),
+            hue_dtype = hue_dtype_value.get(),
+            colorpalette = colorpalette_dropdown_value.get(),
+            canvas = canvas
+        ),
+        font = button_font
+    )
+
+    dummy_label = ctk.CTkLabel(
+        master = options,
+        text = "dtype",
+        font = label_font
+    )
+
+    x_dtype_value = ctk.StringVar(value = "...")
+    x_dropdown_value = ctk.StringVar(value = "...")
+    x_label = ctk.CTkLabel(
+        master = options,
+        text = "X: ",
+        font = label_font
+    )
+    x = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = x_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    x_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = x_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    y_dtype_value = ctk.StringVar(value = "...")
+    y_dropdown_value = ctk.StringVar(value = "...")
+    y_label = ctk.CTkLabel(
+        master = options,
+        text = "Y: ",
+        font = label_font
+    )
+    y = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = y_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    y_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = y_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    hue_dtype_value = ctk.StringVar(value = "...")
+    hue_dropdown_value = ctk.StringVar(value = "...")
+    hue_label = ctk.CTkLabel(
+        master = options,
+        text = "Hue: ",
+        font = label_font
+    )
+    hue = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = hue_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+    hue_dtype = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = hue_dtype_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    colorpalette_dropdown_value = ctk.StringVar(value = "...")
+    colorpalette_label = ctk.CTkLabel(
+        master = options,
+        text = "Color palette: ",
+        font = label_font
+    )
+    colorpalette = ctk.CTkComboBox(
+        master = options,
+        state = "readonly",
+        variable = colorpalette_dropdown_value,
+        font = label_font,
+        dropdown_font = label_font
+    )
+
+    dummy_label.grid(row = 0, column = 2)
+    x_label.grid(row = 1, column = 0, padx = 5, pady = 5)
+    x.grid(row = 1, column = 1, padx = 5, pady = 5)
+    x_dtype.grid(row = 1, column = 2, padx = 5, pady = 5)
+
+    y_label.grid(row = 2, column = 0, padx = 5, pady = 5)
+    y.grid(row = 2, column = 1, padx = 5, pady = 5)
+    y_dtype.grid(row = 2, column = 2, padx = 5, pady = 5)
+
+    hue_label.grid(row = 3, column = 0, padx = 5, pady = 5)
+    hue.grid(row = 3, column = 1, padx = 5, pady = 5)
+    hue_dtype.grid(row = 3, column = 2, padx = 5, pady = 5)
+
+    colorpalette_label.grid(row = 5, column = 0, padx = 5, pady = 5)
+    colorpalette.grid(row = 5, column = 1, padx = 5, pady = 5)
+
+    dummy_button.grid(row = 6, column = 1, padx = 5, pady = 5)
+
+    x["values"] = x.configure(values = column_headers)
+    x_dtype["value"] = x_dtype.configure(values = ["string", "int", "float"])
+
+    y["values"] = y.configure(values = column_headers)
+    y_dtype["value"] = y_dtype.configure(values = ["int", "float"])
+
+    hue["values"] = hue.configure(values = column_headers)
+    hue_dtype["value"] = hue_dtype.configure(values = ["string", "int", "float"])
+
+    colorpalette["values"] = colorpalette.configure(values = [
+        "Greens",
+        "Blues",
+        "Oranges",
+        "Purples",
+        "YlOrBr",
+        "YlOrRd",
+        "OrRd",
+        "BuGn",
+        "BuPu",
+        "GnBu",
+        "PuBu",
+        "PuBuGn",
+        "YlGn",
+        "YlGnBu",
+        "viridis",
+        "plasma",
+        "magma",
+        "inferno",
+        "RdYlBu",
+        "RdYlGn",
+        "BrBG",
+        "PiYG",
+        "PRGn",
+        "PuOr",
+        "RdBu",
+        "Spectral",
+        "coolwarm",
+        "bwr",
+        "seismic"
+    ])
 
 
 ###########################
