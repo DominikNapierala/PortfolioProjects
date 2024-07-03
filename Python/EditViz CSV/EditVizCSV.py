@@ -10,6 +10,8 @@ from typing import Union
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import csv
 
+
+
 def main():
     ctk.set_appearance_mode("light")
     ctk.set_default_color_theme("green")
@@ -17,7 +19,7 @@ def main():
     app_window()
 
 def app_window():
-    app = ctk.CTk() # This line creates the instance of the app.
+    app = ctk.CTk(fg_color = "#2F3E46") # This line creates the instance of the app.
     app.geometry("1000x610")
     app.wm_minsize(1000, 610)
     app.title("CSV file modifier and data visualizer")
@@ -39,38 +41,40 @@ def app_window():
     notebook_controls = ctk.CTkTabview(
         app,
         width = 250,
-        fg_color = "#84A98C",
-        segmented_button_fg_color = "#52796F",
+        fg_color = "#354F52",
+        segmented_button_fg_color = "#ced4da",
         segmented_button_selected_color = "#ccff33",
-        segmented_button_selected_hover_color = "#52796F",
+        segmented_button_selected_hover_color = "#ccff33",
+        segmented_button_unselected_color = "#ced4da",
         text_color = "#2F3E46"
     )
     data_options_tab = notebook_controls.add("Data")
     viz_options_tab = notebook_controls.add("Graphs")
+    notebook_controls._segmented_button.configure(font = label_font)
 
     notebook_table_viz = ctk.CTkTabview(
         app,
-        fg_color = "#84A98C",
-        segmented_button_fg_color = "#52796F",
+        fg_color = "#354F52",
+        segmented_button_fg_color = "#ced4da",
         segmented_button_selected_color = "#ccff33",
-        segmented_button_selected_hover_color = "#52796F",
+        segmented_button_selected_hover_color = "#ccff33",
+        segmented_button_unselected_color = "#ced4da",
         text_color = "#2F3E46"
     )
     table_tab = notebook_table_viz.add("Table")
     viz_tab = notebook_table_viz.add("Visualization")
+    notebook_table_viz._segmented_button.configure(font = label_font)
     ###########################
 
     # Controls notebook frames
     controls_frame = ctk.CTkFrame(
         master = data_options_tab,
-        border_width = 1,
-        border_color = border_color
+        fg_color = "transparent"
     )
 
     visualize_data_frame = ctk.CTkFrame(
         master = viz_options_tab,
-        border_width = 1,
-        border_color = border_color
+        fg_color = "transparent"
     )
     ###########################
 
@@ -78,13 +82,13 @@ def app_window():
     table_frame = ctk.CTkFrame(
         master = table_tab,
         border_width = 0,
-        border_color = border_color
+        border_color = border_color,
+        fg_color = "#ced4da"
     )
 
     viz_frame = ctk.CTkFrame(
         master = viz_tab,
-        border_width = 1,
-        border_color = border_color
+        fg_color = "#354F52"
     )
     ###########################
 
@@ -309,7 +313,7 @@ def app_window():
     # Viz canvas
     ###########################
     fig = plt.Figure()
-    fig.patch.set_facecolor((200/255, 210/255, 195/255))
+    fig.patch.set_facecolor("#354F52")
     viz_canvas = FigureCanvasTkAgg(
         fig,
         master = viz_frame
@@ -610,7 +614,10 @@ def barplot_show(data, **kwargs):
                         fig = kwargs["canvas"].figure
                         fig.clear()
                         ax = fig.add_subplot(111)
-                        ax.set_facecolor((235/255, 235/255, 235/255))
+                        ax.set_facecolor("#2F3E46")
+                        ax.xaxis.label.set_color('white')
+                        ax.yaxis.label.set_color('white')
+                        ax.tick_params(colors='white', which='both')
                         # ax.tick_params(axis='x', fontname='Arial')
                         # ax.tick_params(axis='y', fontname='Arial')
                         sns.barplot(**plot_parameters, ax = ax, errorbar = None, estimator = kwargs["y_aggregation"])
@@ -626,7 +633,7 @@ def barplot_show(data, **kwargs):
                         #         textcoords = 'offset points'
                         #     )
                         for container in ax.containers:  # This handles grouped bars with hue
-                            ax.bar_label(container, fmt='%.2f', label_type='edge', fontsize=15, color='black')
+                            ax.bar_label(container, fmt='%.2f', label_type='edge', fontsize=15, color='white')
                         kwargs["canvas"].draw()
 #########################################################################################################
 
@@ -663,8 +670,11 @@ def boxplot_show(data, **kwargs):
                         fig = kwargs["canvas"].figure
                         fig.clear()
                         ax = fig.add_subplot(111)
-                        ax.set_facecolor((235/255, 235/255, 235/255))
-                        sns.boxplot(**plot_parameters, ax = ax)
+                        ax.set_facecolor("#2F3E46")
+                        ax.xaxis.label.set_color('white')
+                        ax.yaxis.label.set_color('white')
+                        ax.tick_params(colors='white', which='both')
+                        sns.boxplot(**plot_parameters, ax = ax, linecolor = "white")
 
                         kwargs["canvas"].draw()
 #########################################################################################################
@@ -702,7 +712,10 @@ def lineplot_show(data, **kwargs):
                         fig = kwargs["canvas"].figure
                         fig.clear()
                         ax = fig.add_subplot(111)
-                        ax.set_facecolor((235/255, 235/255, 235/255))
+                        ax.set_facecolor("#2F3E46")
+                        ax.xaxis.label.set_color('white')
+                        ax.yaxis.label.set_color('white')
+                        ax.tick_params(colors='white', which='both')
                         sns.lineplot(**plot_parameters, ax = ax, errorbar = None)
 
                         # for line in ax.lines: # This part generates a label for each data point but it looks bad. Too crowded.
@@ -754,7 +767,10 @@ def scatterplot_show(data, **kwargs):
                         fig = kwargs["canvas"].figure
                         fig.clear()
                         ax = fig.add_subplot(111)
-                        ax.set_facecolor((235/255, 235/255, 235/255))
+                        ax.set_facecolor("#2F3E46")
+                        ax.xaxis.label.set_color('white')
+                        ax.yaxis.label.set_color('white')
+                        ax.tick_params(colors='white', which='both')
                         # ax.tick_params(axis='x', fontname='Arial')
                         # ax.tick_params(axis='y', fontname='Arial')
                         sns.scatterplot(**plot_parameters, ax = ax)
