@@ -57,6 +57,13 @@ def menu():
     ))
 
 
+added_metrics = {}
+calculated_p_values = {}
+metrics_table = pd.DataFrame()
+METRICS_CSV = "Chi_metrics_Metrics.csv"
+SIGNIFICANCE_CSV = "Chi_metrics_Significance.csv"
+
+
 def create_spreadsheet():
     global METRICS_CSV, SIGNIFICANCE_CSV
     METRICS_CSV = "Chi_metrics_Metrics.csv"
@@ -93,13 +100,6 @@ def contingency_table_p_values(file_path):
     return df, p_value
 
 
-added_metrics = {}
-calculated_p_values = {}
-metrics_table = pd.DataFrame()
-METRICS_CSV = "Chi_metrics_Metrics.csv"
-SIGNIFICANCE_CSV = "Chi_metrics_Significance.csv"
-
-
 def add_metric():
     root = tk.Tk()
     root.withdraw()
@@ -127,9 +127,12 @@ def show_added_metrics():
     if added_metrics:
         print('Added metrics:')
         iteration = 0
-        for metric, path in added_metrics.items():
-            iteration += 1
-            print(f'{iteration}. {metric}: {path}')
+        try:
+            for metric, path in added_metrics.items():
+                iteration += 1
+                print(f'{iteration}. {metric}: {path}')
+        except (TypeError, AttributeError) as error:
+            print(f'Added metrics are not a valid: {error}')
     else:
         print('No metrics added yet')
 
@@ -139,23 +142,25 @@ def calculate_p_values():
 
     if added_metrics:
         all_rows = []
+        try:
+            for metric, path in added_metrics.items():
+                df, p_value = contingency_table_p_values(path)
+                calculated_p_values[metric] = p_value
 
-        for metric, path in added_metrics.items():
-            df, p_value = contingency_table_p_values(path)
-            calculated_p_values[metric] = p_value
+                df_to_write = [df.columns.tolist()] + df.astype(str).values.tolist()
+                metric_header = [[f'Metric: {metric}', 'P-value:', np.float64(p_value)]]
+                blank_row = [["", ""]]
 
-            df_to_write = [df.columns.tolist()] + df.astype(str).values.tolist()
-            metric_header = [[f'Metric: {metric}', 'P-value:', np.float64(p_value)]]
-            blank_row = [["", ""]]
+                # Flatten the block into CSV-compatible rows
+                block_to_write = metric_header + df_to_write + blank_row
+                all_rows.extend(block_to_write)
+                current_row += len(block_to_write) + 1
 
-            # Flatten the block into CSV-compatible rows
-            block_to_write = metric_header + df_to_write + blank_row
-            all_rows.extend(block_to_write)
-            current_row += len(block_to_write) + 1
-
-        # Write or append to local metrics CSV
-        pd.DataFrame(all_rows).to_csv(METRICS_CSV, index = False, header = False)
-        print(f'P-values calculated and written to {METRICS_CSV}')
+            # Write or append to local metrics CSV
+            pd.DataFrame(all_rows).to_csv(METRICS_CSV, index = False, header = False)
+            print(f'P-values calculated and written to {METRICS_CSV}')
+        except (TypeError, AttributeError) as error:
+            print(f'Added metrics are not a valid: {error}')
     else:
         print('No metrics available for calculations yet')
 
@@ -169,6 +174,16 @@ def show_calculated_p_values():
             print(f'{iteration}. {metric}: {p_value}')
     else:
         print('No metrics hence no p-values :(')
+
+
+def add_external_metric():
+    external_metric_name = input("Please specify metric name: ")
+    try:
+        external_metric_p_value = np.float64(input("Please specify metric p-value: "))
+        print(f'Added external metric {external_metric_name} with p-value: {external_metric_p_value}')
+        calculated_p_values[external_metric_name] = external_metric_p_value
+    except ValueError:
+        print('Invalid p-value. Please enter a numeric value.')
 
 
 def holm_bonferroni_correction(metrics):
@@ -197,12 +212,6 @@ def calculate_statistical_significance(corrected_alpha_table):
     print(corrected_alpha_table)
 
     return corrected_alpha_table
-
-
-def add_external_metric():
-    external_metric_name = input("Please specify metric name: ")
-    external_metric_p_value = np.float64(input("Please specify metric p-value: "))
-    calculated_p_values[external_metric_name] = external_metric_p_value
 
 
 def results_to_csv(corrected_alpha_table):
