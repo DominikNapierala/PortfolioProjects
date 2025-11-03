@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog
 from scipy.stats import chi2
 from tabulate import tabulate
+from typing import Tuple
 
 
 def main():
@@ -53,7 +54,7 @@ def menu():
             ["Export results to CSV", 8],
             ["Exit", 9]
         ],
-        headers=['Option'], tablefmt='fancy_grid'
+        headers = ['Option'], tablefmt = 'fancy_grid'
     ))
 
 
@@ -76,7 +77,7 @@ def create_spreadsheet():
     print(f"Local CSV spreadsheet created:\n  - {METRICS_CSV}\n  - {SIGNIFICANCE_CSV}")
 
 
-def contingency_table_p_values(file_path):
+def contingency_table_p_values(file_path) -> Tuple[pd.DataFrame, float]:
     df = pd.read_csv(file_path)
     df['Sum_rows'] = df[['Success', 'Failure']].sum(axis=1)
     df.loc['Sum_cols'] = df[['Success', 'Failure', 'Sum_rows']].sum()
@@ -186,7 +187,7 @@ def add_external_metric():
         print('Invalid p-value. Please enter a numeric value.')
 
 
-def holm_bonferroni_correction(metrics):
+def holm_bonferroni_correction(metrics: dict[str, float]) -> pd.DataFrame:
     holm_bonferroni_table = pd.DataFrame(columns = ['Metric', 'p-value'])
     for metric, p_value in metrics.items():
         holm_bonferroni_table.loc[len(holm_bonferroni_table)] = [metric, p_value]
@@ -201,7 +202,7 @@ def holm_bonferroni_correction(metrics):
     return holm_bonferroni_table
 
 
-def calculate_statistical_significance(corrected_alpha_table):
+def calculate_statistical_significance(corrected_alpha_table: pd.DataFrame) -> pd.DataFrame:
     corrected_alpha_table['Statistical significance'] = np.where(
         corrected_alpha_table['p-value'] < corrected_alpha_table['Corrected alpha'],
         'Significant',
@@ -214,7 +215,7 @@ def calculate_statistical_significance(corrected_alpha_table):
     return corrected_alpha_table
 
 
-def results_to_csv(corrected_alpha_table):
+def results_to_csv(corrected_alpha_table: pd.DataFrame):
     corrected_alpha_table.to_csv('Chi2_significance_results.csv', index = False)
     print('Results exported')
 
