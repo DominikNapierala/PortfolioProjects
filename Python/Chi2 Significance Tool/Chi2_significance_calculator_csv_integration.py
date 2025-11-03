@@ -62,41 +62,46 @@ added_metrics = {}
 calculated_p_values = {}
 metrics_table = pd.DataFrame()
 METRICS_CSV = "Chi_metrics_Metrics.csv"
-SIGNIFICANCE_CSV = "Chi_metrics_Significance.csv"
 
 
 def create_spreadsheet():
-    global METRICS_CSV, SIGNIFICANCE_CSV
+    global METRICS_CSV
     METRICS_CSV = "Chi_metrics_Metrics.csv"
-    SIGNIFICANCE_CSV = "Chi_metrics_Significance.csv"
 
     # Create empty CSV files for later writing
     pd.DataFrame().to_csv(METRICS_CSV, index = False)
-    pd.DataFrame().to_csv(SIGNIFICANCE_CSV, index = False)
 
-    print(f"Local CSV spreadsheet created:\n  - {METRICS_CSV}\n  - {SIGNIFICANCE_CSV}")
+    print(f"Local CSV spreadsheet created:\n  - {METRICS_CSV}\n")
 
 
 def contingency_table_p_values(file_path) -> Tuple[pd.DataFrame, float]:
     df = pd.read_csv(file_path)
+
+    # Calculate row and column sums
     df['Sum_rows'] = df[['Success', 'Failure']].sum(axis=1)
-    df.loc['Sum_cols'] = df[['Success', 'Failure', 'Sum_rows']].sum()
-    df['EV_Success'] = df['Success']['Sum_cols'] * df['Sum_rows'] / df['Sum_rows']['Sum_cols']
-    df['EV_Failure'] = df['Failure']['Sum_cols'] * df['Sum_rows'] / df['Sum_rows']['Sum_cols']
-    df['Chi2_Success'] = (df['Success'] - df['EV_Success']) ** 2 / df['EV_Success']
-    df['Chi2_Failure'] = (df['Failure'] - df['EV_Failure']) ** 2 / df['EV_Failure']
-    df.loc['Sum_cols'] = df.drop('Sum_cols')[
-        [
-            'Success',
-            'Failure',
-            'Sum_rows',
-            'EV_Success',
-            'EV_Failure',
-            'Chi2_Success',
-            'Chi2_Failure'
-        ]
-    ].sum()
-    Chi2_statistic = df.loc['Sum_cols']['Chi2_Success'] + df.loc['Sum_cols']['Chi2_Failure']
+    df.loc['Sum_cols', ['Success', 'Failure', 'Sum_rows']] = df[['Success', 'Failure', 'Sum_rows']].sum()
+
+    # Grand total
+    grand_total = df.loc['Sum_cols', 'Sum_rows']
+
+    # Calculate expected values
+    df.loc[:, 'EV_Success'] = df['Sum_rows'] * df.loc['Sum_cols', 'Success'] / grand_total
+    df.loc[:, 'EV_Failure'] = df['Sum_rows'] * df.loc['Sum_cols', 'Failure'] / grand_total
+
+    # Chi-square contributions per cell
+    df.loc[:, 'Chi2_Success'] = (df['Success'] - df['EV_Success']) ** 2 / df['EV_Success']
+    df.loc[:, 'Chi2_Failure'] = (df['Failure'] - df['EV_Failure']) ** 2 / df['EV_Failure']
+
+    # Recalculate the bottom “Sum_cols” row to include totals for new columns
+    df.loc['Sum_cols', ['EV_Success', 'EV_Failure', 'Chi2_Success', 'Chi2_Failure']] = (
+        df.drop('Sum_cols')[['EV_Success', 'EV_Failure', 'Chi2_Success', 'Chi2_Failure']].sum()
+    )
+
+    # Chi-square statistic = sum of all contributions
+    Chi2_statistic = (
+        df.loc['Sum_cols', 'Chi2_Success'] + df.loc['Sum_cols', 'Chi2_Failure']
+    )
+
     p_value = chi2.sf(Chi2_statistic, 1)
     return df, p_value
 
