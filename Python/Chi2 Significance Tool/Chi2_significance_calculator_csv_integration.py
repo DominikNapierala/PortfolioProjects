@@ -94,7 +94,14 @@ def contingency_table_p_values(file_path) -> Tuple[pd.DataFrame, float]:
 
     # Recalculate the bottom “Sum_cols” row to include totals for new columns
     df.loc['Sum_cols', ['EV_Success', 'EV_Failure', 'Chi2_Success', 'Chi2_Failure']] = (
-        df.drop('Sum_cols')[['EV_Success', 'EV_Failure', 'Chi2_Success', 'Chi2_Failure']].sum()
+        df.drop('Sum_cols')[
+            [
+                'EV_Success',
+                'EV_Failure',
+                'Chi2_Success',
+                'Chi2_Failure'
+            ]
+        ].sum()
     )
 
     # Chi-square statistic = sum of all contributions
